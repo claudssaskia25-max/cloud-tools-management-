@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" class=""><head><script>window.livecodes = window.livecodes || {};</script><title>Untitled Project</title><meta name="title" content="Untitled Project"><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="./style.css"><script src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" async=""></script><script type="importmap">{
+  "imports": {}
+}</script></head><body>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool Inventory</title>
+<style>
+* {margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+body {background:#f0f4f8;padding:12px;}
+.container {background:#fff;max-width:600px;margin:0 auto;padding:16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+h2 {font-size:18px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid #ddd;}
+.form-group {margin-bottom:10px;}
+label {font-size:13px;margin-bottom:3px;display:block;}
+input,textarea,select {width:100%;padding:8px;border:1px solid #ccc;border-radius:4px;font-size:13px;}
+textarea {min-height:50px;resize:vertical;}
+.btn {width:100%;padding:9px;border:none;border-radius:4px;font-size:14px;margin:4px 0;cursor:pointer;}
+.btn-primary {background:#2563eb;color:#fff;}
+.btn-secondary {background:#64748b;color:#fff;}
+.btn-edit {background:#f59e0b;color:#fff;padding:5px 8px;font-size:12px;border:none;border-radius:3px;}
+.btn-delete {background:#dc2626;color:#fff;padding:5px 8px;font-size:12px;border:none;border-radius:3px;}
+.search-row {display:grid;grid-template-columns:2fr 1fr;gap:10px;margin:12px 0;}
+.report-container {margin-top:12px;padding:10px;background:#f8fafc;border:1px solid #ddd;border-radius:4px;display:none;}
+.checker-input {width:100%;padding:6px;margin:6px 0 10px 0;border:1px solid #ccc;border-radius:3px;font-size:12px;}
+#reportText {width:100%;height:170px;padding:8px;border:1px solid #ccc;border-radius:3px;font-family:monospace;font-size:10px;white-space:pre;overflow-x:auto;}
+table {width:100%;border-collapse:collapse;margin-top:8px;}
+th,td {padding:8px 6px;text-align:left;border-bottom:1px solid #eee;font-size:12px;}
+th {background:#2563eb;color:#fff;}
+.status {padding:3px 6px;border-radius:10px;font-size:11px;color:#fff;}
+.av {background:#10b981;}
+.in {background:#3b82f6;}
+.rep {background:#f59e0b;}
+.con {background:#ef4444;}
+@media(max-width:480px){.search-row{grid-template-columns:1fr;}}
+</style>
+
+
+<div class="container">
+<h2>🔧 Tool Inventory</h2>
+
+<div class="form-group">
+<label>Serial *</label>
+<input type="text" id="serial" placeholder="TL-001">
+</div>
+
+<div class="form-group">
+<label>Name *</label>
+<input type="text" id="name" placeholder="Drill">
+</div>
+
+<div class="form-group">
+<label>Purpose</label>
+<textarea id="use" placeholder="Use"></textarea>
+</div>
+
+<div class="form-group">
+<label>Status</label>
+<select id="status">
+<option value="Available">Available</option>
+<option value="In Use">In Use</option>
+<option value="Under Repair">Repair</option>
+<option value="Condemned">Condemned</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Remarks</label>
+<textarea id="remarks" placeholder="Notes"></textarea>
+</div>
+
+<button class="btn btn-primary" onclick="saveTool()">💾 Save</button>
+<button class="btn btn-secondary" onclick="generateReport()">📄 Report</button>
+
+<div class="report-container" id="reportArea">
+<h4 style="font-size:13px;margin-bottom:4px;">Report</h4>
+<label style="font-size:11px;">Checker Name:</label>
+<input type="text" id="checker" class="checker-input" placeholder="Enter name here...">
+<textarea id="reportText" readonly=""></textarea>
+<button class="btn btn-primary" onclick="copyReport()">📋 Copy Report</button>
+</div>
+
+<div class="search-row">
+<div class="form-group">
+<label>Search</label>
+<input type="text" id="search" placeholder="Search..." onkeyup="displayTools()">
+</div>
+<div class="form-group">
+<label>Filter</label>
+<select id="filterStatus" onchange="displayTools()">
+<option value="All">All</option>
+<option value="Available">Available</option>
+<option value="In Use">In Use</option>
+<option value="Under Repair">Repair</option>
+<option value="Condemned">Condemned</option>
+</select>
+</div>
+</div>
+
+<div class="table-container">
+<table>
+<thead>
+<tr><th>Serial</th><th>Name</th><th>Status</th><th>Action</th></tr>
+</thead>
+<tbody id="toolTable"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+let tools = JSON.parse(localStorage.getItem("tools")) || [];
+let editIndex = -1;
+
+function saveTool() {
+let serial = document.getElementById("serial").value.trim();
+let name = document.getElementById("name").value.trim();
+let use = document.getElementById("use").value.trim();
+let status = document.getElementById("status").value;
+let remarks = document.getElementById("remarks").value.trim();
+if(!serial||!name){alert("Enter Serial & Name");return;}
+let tool = {serial,name,use,status,remarks};
+editIndex===-1?tools.push(tool):tools[editIndex]=tool;
+editIndex=-1;localStorage.setItem("tools",JSON.stringify(tools));clearForm();displayTools();
+}
+
+function editTool(i){
+let t=tools[i];
+document.getElementById("serial").value=t.serial;
+document.getElementById("name").value=t.name;
+document.getElementById("use").value=t.use||"";
+document.getElementById("status").value=t.status;
+document.getElementById("remarks").value=t.remarks||"";
+editIndex=i;window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteTool(i){if(confirm("Delete?")){tools.splice(i,1);localStorage.setItem("tools",JSON.stringify(tools));displayTools();}}
+
+function clearForm(){
+document.getElementById("serial").value="";document.getElementById("name").value="";
+document.getElementById("use").value="";document.getElementById("status").value="Available";
+document.getElementById("remarks").value="";
+}
+
+function displayTools(){
+let search=document.getElementById("search").value.toLowerCase();
+let filter=document.getElementById("filterStatus").value;
+let html="";
+tools.forEach((t,i)=>{
+if(filter!=="All"&&t.status!==filter)return;
+if(t.serial.toLowerCase().includes(search)||t.name.toLowerCase().includes(search)){
+let cls=t.status==="Available"?"av":t.status==="In Use"?"in":t.status==="Under Repair"?"rep":"con";
+html+=`<tr>
+<td>${t.serial}</td>
+<td>${t.name}</td>
+<td><span class="status ${cls}">${t.status.replace("Under Repair","Repair")}</span></td>
+<td><button class="btn-edit" onclick="editTool(${i})">Edit</button>
+<button class="btn-delete" onclick="deleteTool(${i})">Del</button></td>
+</tr>`;
+}});
+document.getElementById("toolTable").innerHTML=html||`<tr><td colspan="4" style="text-align:center;color:#666;">No tools</td></tr>`;
+}
+
+// ✅ Report with 12-hour time format
+function generateReport(){
+let now = new Date();
+let date = now.toLocaleDateString();
+let time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:true});
+let filter = document.getElementById("filterStatus").value;
+let checkerName = document.getElementById("checker").value.trim() || "____________________";
+let list = filter === "All" ? tools : tools.filter(t => t.status === filter);
+let total = list.length;
+
+let report = `==============================\n`;
+report += `   TOOL INVENTORY REPORT\n`;
+report += `==============================\n`;
+report += `Date    : ${date}\n`;
+report += `Time    : ${time}\n`;
+report += `Filter  : ${filter} | Total: ${total}\n`;
+report += `Checker : ${checkerName}\n`;
+report += `------------------------------\n`;
+report += `S/N | NAME   | USE  | STAT | REMARKS\n`;
+report += `------------------------------\n`;
+
+if(!total){
+    report += `No records found\n`;
+} else {
+    list.forEach(t => {
+        let s = t.serial.padEnd(6).substring(0,6);
+        let n = t.name.padEnd(7).substring(0,7);
+        let u = (t.use || "-").padEnd(5).substring(0,5);
+        let st = t.status.replace("Under Repair","Rep").padEnd(5).substring(0,5);
+        let r = (t.remarks || "-").replace(/\n/g," ").substring(0,20);
+        report += `${s}| ${n}| ${u}| ${st}| ${r}\n`;
+    });
+}
+
+report += `==============================\n`;
+
+document.getElementById("reportText").value = report;
+document.getElementById("reportArea").style.display = "block";
+document.getElementById("reportArea").scrollIntoView({behavior:"smooth"});
+}
+
+function copyReport(){
+let box=document.getElementById("reportText");box.select();box.setSelectionRange(0,99999);document.execCommand("copy");alert("✅ Report copied!");
+}
+
+displayTools();
+</script>
+
+
+<script src="./script.js"></script></body></html>
