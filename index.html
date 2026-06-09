@@ -21,7 +21,7 @@ textarea {min-height:50px;resize:vertical;}
 .btn-primary {background:#2563eb;color:#fff;}
 .btn-secondary {background:#64748b;color:#fff;}
 .btn-edit {background:#f59e0b;color:#fff;padding:5px 8px;font-size:12px;border:none;border-radius:3px;}
-.btn-delete {background:#dc2626;color:#fff;padding:5px 8px;font-size:12px;border:none;border-radius:3px;}
+.btn-delete {background:#dc2626;color:#fff;padding:5px 8px;font-size:12px;border-radius:3px;}
 .search-row {display:grid;grid-template-columns:2fr 1fr;gap:10px;margin:12px 0;}
 .report-container {margin-top:12px;padding:10px;background:#f8fafc;border:1px solid #ddd;border-radius:4px;display:none;}
 .checker-input {width:100%;padding:6px;margin:6px 0 10px 0;border:1px solid #ccc;border-radius:3px;font-size:12px;}
@@ -110,7 +110,30 @@ th {background:#2563eb;color:#fff;}
 </div>
 
 <script>
-let tools = JSON.parse(localStorage.getItem("tools")) || [];
+// ✅ FULL COMPLETE LIST OF ALL 15 TOOLS
+const FULL_TOOL_LIST = [
+    {serial: "000093", name: "Fan", use: "Air cooling", status: "In Use", remarks: "-"},
+    {serial: "000057", name: "Label", use: "Labeling", status: "In Use", remarks: "-"},
+    {serial: "000080", name: "Nail gun", use: "Nailing", status: "In Use", remarks: "-"},
+    {serial: "000051", name: "Safety gear", use: "PPE", status: "In Use", remarks: "-"},
+    {serial: "000077", name: "Battery crimper", use: "Crimping", status: "In Use", remarks: "-"},
+    {serial: "000045", name: "Rubber hammer", use: "Hammering", status: "In Use", remarks: "-"},
+    {serial: "000040", name: "Bolt cutter", use: "Cutting", status: "In Use", remarks: "-"},
+    {serial: "000059", name: "Sealant gun", use: "Sealing", status: "In Use", remarks: "-"},
+    {serial: "000099", name: "Heat gun", use: "Bending", status: "In Use", remarks: "-"},
+    {serial: "000094", name: "Sds wire drill", use: "Drilling", status: "In Use", remarks: "-"},
+    {serial: "000066", name: "Grinder", use: "Cutting", status: "In Use", remarks: "-"},
+    {serial: "000002", name: "Wireless drill", use: "Drilling", status: "In Use", remarks: "-"},
+    {serial: "000004", name: "Impact driver", use: "Tightening", status: "In Use", remarks: "-"},
+    {serial: "000096", name: "Wireless drill", use: "Drilling", status: "In Use", remarks: "-"},
+    {serial: "000097", name: "Grinder", use: "Cutting", status: "In Use", remarks: "-"}
+];
+
+// ✅ CLEAR OLD DATA & LOAD FULL LIST
+localStorage.removeItem("tools");
+let tools = [...FULL_TOOL_LIST];
+localStorage.setItem("tools", JSON.stringify(tools));
+
 let editIndex = -1;
 
 function saveTool() {
@@ -162,11 +185,10 @@ html+=`<tr>
 document.getElementById("toolTable").innerHTML=html||`<tr><td colspan="4" style="text-align:center;color:#666;">No tools</td></tr>`;
 }
 
-// ✅ Report with 12-hour time format
 function generateReport(){
 let now = new Date();
-let date = now.toLocaleDateString();
-let time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:true});
+let date = now.toLocaleDateString('en-GB');
+let time = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', hour12:true}).toLowerCase();
 let filter = document.getElementById("filterStatus").value;
 let checkerName = document.getElementById("checker").value.trim() || "____________________";
 let list = filter === "All" ? tools : tools.filter(t => t.status === filter);
